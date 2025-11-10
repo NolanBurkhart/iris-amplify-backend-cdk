@@ -1,0 +1,9 @@
+boto3
+botocore
+authlib
+werkzeug
+flask
+requests
+PyJWT>=2.8.0
+cryptography>=41.0.0
+requests==2.31.0
