@@ -129,6 +129,12 @@ class IrisCdkAmplifyStack(Stack):
                 "methods": ["GET"]
             },
             {
+                "function_dir": "inference",
+                "lambda_name": "IrisLambda-inference",
+                "api_path": "inference",
+                "methods": ["GET"]
+            },
+            {
                 "function_dir": "degree_requirements",
                 "lambda_name": "IrisLambda-degree-requirements",
                 "api_path": "degree-requirements",
