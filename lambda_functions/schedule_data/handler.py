@@ -82,7 +82,8 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 "term": term
             }
 
-            logger.info(f"Successfully retrieved schedule data for term: {term}, user: {username}")
+            logger.info(f"Successfully retrieved schedule data for term: {       
+            }, user: {username}")
             return validation.safe_json_response(response_data)
 
         except s3_client.exceptions.NoSuchKey:

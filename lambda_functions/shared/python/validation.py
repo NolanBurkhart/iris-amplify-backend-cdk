@@ -2,6 +2,7 @@
 Input validation and sanitization utilities for Iris Lambda functions.
 Provides secure validation for user inputs to prevent injection attacks.
 """
+import json
 import re
 import logging
 from typing import Optional, Dict, Any
@@ -240,6 +241,128 @@ def create_validation_error_response(error_message: str) -> Dict[str, Any]:
             'Access-Control-Allow-Methods': 'GET,POST,OPTIONS'
         },
         'body': '{"error": "' + error_message.replace('"', '\\"') + '"}'
+    }
+
+def validate_required_fields(data: Dict[str, Any], required_fields: list) -> None:
+    """
+    Validate that all required fields are present in the data.
+
+    Args:
+        data: Dictionary to validate
+        required_fields: List of required field names
+
+    Raises:
+        ValidationError: If any required field is missing
+    """
+    missing_fields = []
+    for field in required_fields:
+        if field not in data or data[field] is None:
+            missing_fields.append(field)
+
+    if missing_fields:
+        raise ValidationError(f"Missing required fields: {', '.join(missing_fields)}")
+
+def sanitize_input(input_str: str) -> str:
+    """
+    Sanitize user input by removing dangerous characters.
+
+    Args:
+        input_str: Raw input string
+
+    Returns:
+        Sanitized string
+    """
+    if not input_str:
+        return ""
+
+    # Convert to string if not already
+    if not isinstance(input_str, str):
+        input_str = str(input_str)
+
+    # Remove null characters and control characters
+    sanitized = re.sub(r'[\x00-\x1f\x7f]', '', input_str)
+
+    # Trim whitespace
+    return sanitized.strip()
+
+def validate_input_length(input_str: str, min_length: int, max_length: int, field_name: str = "input") -> str:
+    """
+    Validate input string length.
+
+    Args:
+        input_str: Input string to validate
+        min_length: Minimum allowed length
+        max_length: Maximum allowed length
+        field_name: Name of the field for error messages
+
+    Returns:
+        Validated input string
+
+    Raises:
+        ValidationError: If length is invalid
+    """
+    if not input_str:
+        if min_length > 0:
+            raise ValidationError(f"{field_name} cannot be empty")
+        return ""
+
+    length = len(input_str)
+    if length < min_length:
+        raise ValidationError(f"{field_name} must be at least {min_length} characters long")
+
+    if length > max_length:
+        raise ValidationError(f"{field_name} cannot exceed {max_length} characters")
+
+    return input_str
+
+def create_error_response(status_code: int, error_code: str, message: str) -> Dict[str, Any]:
+    """
+    Create a standardized error response.
+
+    Args:
+        status_code: HTTP status code
+        error_code: Application-specific error code
+        message: Human-readable error message
+
+    Returns:
+        Formatted error response
+    """
+    return {
+        'statusCode': status_code,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+            'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS'
+        },
+        'body': json.dumps({
+            'error': {
+                'code': error_code,
+                'message': message
+            }
+        })
+    }
+
+def create_success_response(data: Any, status_code: int = 200) -> Dict[str, Any]:
+    """
+    Create a standardized success response.
+
+    Args:
+        data: Response data
+        status_code: HTTP status code
+
+    Returns:
+        Formatted success response
+    """
+    return {
+        'statusCode': status_code,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+            'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS'
+        },
+        'body': json.dumps(data, default=str)
     }
 
 def safe_json_response(data: Any, status_code: int = 200) -> Dict[str, Any]:

@@ -7,6 +7,7 @@ requests
 PyJWT>=2.8.0
 cryptography>=41.0.0
 requests==2.31.0
-strands-agents
-strands-agents-tools
-strands-agents-builder
+strands-agents>=1.0.0
+strands-agents-tools>=0.2.0
+pydantic_core
+pydantic
